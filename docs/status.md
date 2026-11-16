@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 5 — Implement parametric geometry
-- **Status:** Complete (Ready for Phase 6 approval)
+- **Current phase:** Phase 6 — Build the Three.js Workbench viewer
+- **Status:** Complete (Ready for Phase 7 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 5 completion and transition to Phase 6 (Build the Three.js Workbench viewer).
+- **Next gate:** Approve Phase 6 completion and transition to Phase 7 (Implement binary STL export without gating).
 
 ## Phase progress
 
@@ -19,7 +19,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 3 | Add Firebase and App Check wiring | Complete |
 | 4 | Define the domain model and template schemas | Complete |
 | 5 | Implement parametric geometry | Complete |
-| 6 | Build the Three.js Workbench viewer | Not started |
+| 6 | Build the Three.js Workbench viewer | Complete |
 | 7 | Implement STL export without gating | Not started |
 | 8 | Implement the deterministic verifier | Not started |
 | 9 | Add measurement and provenance workflows | Not started |
@@ -43,6 +43,13 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Approve and install Phase 5 packages (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 6 (Build the Three.js Workbench viewer). Implemented interactive 3D WebGL viewport (`ThreeViewport.tsx`) with OrbitControls, studio 3-point lighting, shadow mapping, 1mm/10mm reference ground grid, wireframe overlay, bounding box HUD, and view reset. Built `ParameterPanel.tsx` with template switching tabs (`knob`, `clip`, `bracket`), range scrubbers, numeric inputs, and automatic provenance tagging (`Measured` upon manual edit). Wired live debounced CSG geometry rebuilding into the Workbench screen.
+- Phase: Phase 6 — Build the Three.js Workbench viewer
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Tested responsive canvas sizing with ResizeObserver and camera targeting.
+- Decision or approval needed: Approve Phase 6 completion and approve transition to Phase 7 (Implement STL export without gating).
 
 ### 2026-11-16
 
