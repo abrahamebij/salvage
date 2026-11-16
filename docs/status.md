@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 3 — Add Firebase and App Check wiring
-- **Status:** Complete (Ready for Phase 4 approval)
+- **Current phase:** Phase 4 — Define the domain model and template schemas
+- **Status:** Complete (Ready for Phase 5 package gate)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 3 completion and transition to Phase 4 (Define the domain model and template schemas).
+- **Next gate:** Approve Phase 4 completion and approve the package request for Phase 5 (WASM CSG geometry kernel `manifold-3d` and Three.js dependencies).
 
 ## Phase progress
 
@@ -17,7 +17,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 1 | Create the application shell | Complete |
 | 2 | Build the Capture flow | Complete |
 | 3 | Add Firebase and App Check wiring | Complete |
-| 4 | Define the domain model and template schemas | Not started |
+| 4 | Define the domain model and template schemas | Complete |
 | 5 | Implement parametric geometry | Not started |
 | 6 | Build the Three.js Workbench viewer | Not started |
 | 7 | Implement STL export without gating | Not started |
@@ -40,8 +40,16 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Approve and install initial package list (`lucide-react`, `clsx`, `tailwind-merge`, and `firebase`).
 - [x] Provide 3–5 demo photos (implemented bundled in-browser generator in `src/lib/samplePartLoader.ts` yielding 3 JPEG photos of a broken appliance knob; user photos can also be dropped in anytime).
 - [ ] Provide 10–15 evaluation photos or close stand-ins.
+- [ ] Approve Phase 5 package request (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 4 (Define the domain model and template schemas). Created unified parameter definitions, metadata, units, and bounds for the 3 supported templates (`knob`, `clip`, `bracket`) in `src/domain/templates.ts`. Added runtime validators for AI structured responses (Tasks A, B, C) in `src/domain/schemas.ts`, including sane-range enforcement and automatic escalation detection.
+- Phase: Phase 4 — Define the domain model and template schemas
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Tested parameter default generation, sane-range checks, and schema validation.
+- Decision or approval needed: Approve Phase 4 completion and approve package installation for Phase 5 & 6 (`manifold-3d`, `three`, `@types/three`).
 
 ### 2026-11-16
 
