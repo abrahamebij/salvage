@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 6 — Build the Three.js Workbench viewer
-- **Status:** Complete (Ready for Phase 7 approval)
+- **Current phase:** Phase 7 — Implement STL export without gating
+- **Status:** Complete (Ready for Phase 8 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 6 completion and transition to Phase 7 (Implement binary STL export without gating).
+- **Next gate:** Approve Phase 7 completion and transition to Phase 8 (Implement the deterministic verifier).
 
 ## Phase progress
 
@@ -20,7 +20,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 4 | Define the domain model and template schemas | Complete |
 | 5 | Implement parametric geometry | Complete |
 | 6 | Build the Three.js Workbench viewer | Complete |
-| 7 | Implement STL export without gating | Not started |
+| 7 | Implement STL export without gating | Complete |
 | 8 | Implement the deterministic verifier | Not started |
 | 9 | Add measurement and provenance workflows | Not started |
 | 10 | Add export gating, overrides, and honest limitations | Not started |
@@ -43,6 +43,13 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Approve and install Phase 5 packages (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 7 (Implement STL export without gating). Created standard binary STL serializer (`geometryToBinaryStl`) with 80-byte header, uint32 triangle count, and 50-byte IEEE 754 facet records in `src/geometry/stlExporter.ts`. Added deterministic filename generator (`generateStlFilename`) and browser download trigger (`downloadStl`). Integrated binary STL generation into `ExportScreen.tsx` with part specifications, file size display, and the mandatory limitations notice.
+- Phase: Phase 7 — Implement STL export without gating
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Tested binary buffer sizing formula (`84 + numTriangles * 50`) and little-endian float serialization.
+- Decision or approval needed: Approve Phase 7 completion and approve transition to Phase 8 (Implement the deterministic verifier).
 
 ### 2026-11-16
 

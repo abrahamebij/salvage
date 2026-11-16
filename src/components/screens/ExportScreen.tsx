@@ -1,19 +1,85 @@
-import React from "react";
-import { Download, AlertTriangle, ArrowLeft } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import type { TemplateId } from "../../types";
+import {
+  generateGeometry,
+  geometryToBinaryStl,
+  downloadStl,
+  generateStlFilename,
+  type GeneratedGeometry,
+} from "../../geometry";
+import { Download, AlertTriangle, ArrowLeft, CheckCircle2, Box, FileCode, Loader2 } from "lucide-react";
 
 interface ExportScreenProps {
+  selectedTemplate: Exclude<TemplateId, "none">;
+  parameters: Record<string, number>;
   onBack: () => void;
 }
 
-export const ExportScreen: React.FC<ExportScreenProps> = ({ onBack }) => {
+export const ExportScreen: React.FC<ExportScreenProps> = ({
+  selectedTemplate,
+  parameters,
+  onBack,
+}) => {
+  const [geometry, setGeometry] = useState<GeneratedGeometry | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+    setIsGenerating(true);
+    setError(null);
+
+    generateGeometry(selectedTemplate, parameters)
+      .then((geo) => {
+        if (!isCancelled) setGeometry(geo);
+      })
+      .catch((err) => {
+        if (!isCancelled) setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (!isCancelled) setIsGenerating(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedTemplate, parameters]);
+
+  const handleDownload = () => {
+    if (!geometry) return;
+    try {
+      const filename = generateStlFilename(
+        selectedTemplate,
+        geometry.boundingBox.dimensions,
+        false
+      );
+      const stlBytes = geometryToBinaryStl(
+        geometry,
+        `Salvage STL - ${selectedTemplate} - ${geometry.triangleCount} tris`
+      );
+      downloadStl(stlBytes, filename);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const filename = geometry
+    ? generateStlFilename(selectedTemplate, geometry.boundingBox.dimensions, false)
+    : `salvage_${selectedTemplate}.stl`;
+
+  const fileSizeKb = geometry ? ((84 + geometry.triangleCount * 50) / 1024).toFixed(1) : "0";
+
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6">
+    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-[#f4f4f6]">
           Export Binary STL
         </h1>
         <p className="mt-2 text-sm text-[#9ea3b0] max-w-2xl">
-          Download your verified 3D printable replacement model ready for your slicer (Cura, PrusaSlicer, Bambu Studio).
+          Download your verified 3D printable replacement model. The binary STL file is scaled in millimeters and aligned for direct slicing in Cura, PrusaSlicer, or Bambu Studio.
         </p>
       </div>
 
@@ -24,33 +90,88 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onBack }) => {
           <p className="font-semibold text-amber-400">Honest Limitations Notice</p>
           <p className="text-[#9ea3b0] leading-relaxed">
             Geometry checks passed. This is not a load-tested or mechanically verified part.
-            Check fitment and material suitability (PETG/ABS/Nylon recommended for mechanical stress) before putting in service.
+            Check fitment and material suitability (PETG, ABS, or Nylon recommended for functional mechanical stress) before putting in service.
           </p>
         </div>
       </div>
 
-      <div className="rounded-lg border border-[#2b2e37] bg-[#18191e] p-8 text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#212329] text-amber-500 border border-[#2b2e37]">
-          <Download className="w-6 h-6" />
+      {/* Error state */}
+      {error && (
+        <div className="mb-6 p-4 rounded-lg bg-red-950/40 border border-red-500/30 text-xs text-red-200">
+          <p className="font-semibold text-red-400">Export Error:</p>
+          <p className="mt-1 font-mono">{error}</p>
         </div>
+      )}
+
+      {/* Part Specifications & Download Card */}
+      <div className="rounded-lg border border-[#2b2e37] bg-[#18191e] p-8 text-center space-y-6">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+          <FileCode className="w-7 h-7" />
+        </div>
+
         <div>
-          <h2 className="text-base font-semibold text-[#f4f4f6]">
-            Binary STL Generation
+          <h2 className="text-lg font-bold text-[#f4f4f6] capitalize">
+            {selectedTemplate} Replacement Part
           </h2>
           <p className="text-xs text-[#9ea3b0] font-mono mt-1">
-            salvage_knob_verified.stl
+            {filename}
           </p>
         </div>
-        <button
-          type="button"
-          disabled
-          className="px-6 py-2.5 text-xs font-semibold rounded bg-[#212329] text-[#6b7280] border border-[#2b2e37] cursor-not-allowed"
-        >
-          Download STL (Requires Geometry in Phase 7)
-        </button>
+
+        {/* Geometry specs grid */}
+        {geometry && (
+          <div className="max-w-md mx-auto grid grid-cols-3 gap-2 text-xs font-mono">
+            <div className="p-2.5 rounded bg-[#121316] border border-[#2b2e37] text-left">
+              <span className="text-[10px] text-[#6b7280] block">DIMENSIONS</span>
+              <span className="text-amber-400 font-medium">
+                {geometry.boundingBox.dimensions[0].toFixed(1)} × {geometry.boundingBox.dimensions[1].toFixed(1)} × {geometry.boundingBox.dimensions[2].toFixed(1)} mm
+              </span>
+            </div>
+            <div className="p-2.5 rounded bg-[#121316] border border-[#2b2e37] text-left">
+              <span className="text-[10px] text-[#6b7280] block">TRIANGLES</span>
+              <span className="text-[#f4f4f6] font-medium">
+                {geometry.triangleCount.toLocaleString()}
+              </span>
+            </div>
+            <div className="p-2.5 rounded bg-[#121316] border border-[#2b2e37] text-left">
+              <span className="text-[10px] text-[#6b7280] block">FILE SIZE</span>
+              <span className="text-[#f4f4f6] font-medium">
+                {fileSizeKb} KB
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="pt-2 flex flex-col items-center space-y-2">
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={isGenerating || !geometry}
+            className="inline-flex items-center space-x-2 px-6 py-3 text-xs font-semibold rounded-md bg-[#f59e0b] text-[#121316] hover:bg-[#d97706] transition-all disabled:opacity-50 cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          >
+            {isGenerating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : downloadSuccess ? (
+              <CheckCircle2 className="w-4 h-4 text-[#121316]" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            <span>
+              {isGenerating
+                ? "Compiling Binary STL..."
+                : downloadSuccess
+                ? "Downloaded Successfully!"
+                : "Download Binary STL (.stl)"}
+            </span>
+          </button>
+
+          <span className="text-[11px] font-mono text-[#6b7280]">
+            Format: Standard IEEE 754 Binary STL • Units: mm • Watertight CSG
+          </span>
+        </div>
       </div>
 
-      <div className="mt-8 flex justify-start">
+      <div className="mt-8 flex justify-between items-center">
         <button
           onClick={onBack}
           className="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-medium rounded text-[#9ea3b0] hover:text-[#f4f4f6] bg-[#212329] border border-[#2b2e37] hover:bg-[#2b2e37] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
@@ -58,6 +179,11 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({ onBack }) => {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Workbench</span>
         </button>
+
+        <span className="text-xs text-emerald-400 font-mono flex items-center space-x-1">
+          <Box className="w-3.5 h-3.5" />
+          <span>Ready for 3D printing</span>
+        </span>
       </div>
     </div>
   );

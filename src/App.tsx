@@ -85,7 +85,11 @@ export function App() {
           />
         )}
         {currentStep === "export" && (
-          <ExportScreen onBack={() => setCurrentStep("workbench")} />
+          <ExportScreen
+            selectedTemplate={selectedTemplate}
+            parameters={parameters}
+            onBack={() => setCurrentStep("workbench")}
+          />
         )}
       </main>
 

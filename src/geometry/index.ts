@@ -8,6 +8,7 @@ import { TEMPLATE_DEFINITIONS, getDefaultParameters } from "../domain/templates"
 export * from "./types";
 export * from "./manifoldCore";
 export * from "./meshConverter";
+export * from "./stlExporter";
 export * from "./generators/knobGenerator";
 export * from "./generators/clipGenerator";
 export * from "./generators/bracketGenerator";
@@ -31,7 +32,6 @@ export async function generateGeometry(
     if (typeof raw !== "number" || isNaN(raw)) {
       resolvedParams[p.id] = p.defaultValue;
     } else {
-      // Clamp strictly within min and max
       resolvedParams[p.id] = Math.max(p.min, Math.min(p.max, raw));
     }
   }
