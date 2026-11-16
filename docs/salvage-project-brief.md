@@ -25,7 +25,7 @@
 
 ## 1. Product
 
-**User:** a technician or repair shop owner who regularly meets small broken parts that are discontinued or too expensive to import.
+**Users:** regular people repairing items at home, technicians, and repair shop owners who encounter small broken parts that are discontinued or too expensive to replace or import. The experience should be approachable to someone without specialist fabrication knowledge while still supporting professional repair workflows.
 
 **Scope (small non-electrical mechanical and plastic parts):** three parametric templates only.
 1. **Control knob** (appliance knob with shaft bore)
