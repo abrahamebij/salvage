@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 4 — Define the domain model and template schemas
-- **Status:** Complete (Ready for Phase 5 package gate)
+- **Current phase:** Phase 5 — Implement parametric geometry
+- **Status:** Complete (Ready for Phase 6 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 4 completion and approve the package request for Phase 5 (WASM CSG geometry kernel `manifold-3d` and Three.js dependencies).
+- **Next gate:** Approve Phase 5 completion and transition to Phase 6 (Build the Three.js Workbench viewer).
 
 ## Phase progress
 
@@ -18,7 +18,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 2 | Build the Capture flow | Complete |
 | 3 | Add Firebase and App Check wiring | Complete |
 | 4 | Define the domain model and template schemas | Complete |
-| 5 | Implement parametric geometry | Not started |
+| 5 | Implement parametric geometry | Complete |
 | 6 | Build the Three.js Workbench viewer | Not started |
 | 7 | Implement STL export without gating | Not started |
 | 8 | Implement the deterministic verifier | Not started |
@@ -40,9 +40,16 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Approve and install initial package list (`lucide-react`, `clsx`, `tailwind-merge`, and `firebase`).
 - [x] Provide 3–5 demo photos (implemented bundled in-browser generator in `src/lib/samplePartLoader.ts` yielding 3 JPEG photos of a broken appliance knob; user photos can also be dropped in anytime).
 - [ ] Provide 10–15 evaluation photos or close stand-ins.
-- [ ] Approve Phase 5 package request (`manifold-3d`, `three`, `@types/three`).
+- [x] Approve and install Phase 5 packages (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 5 (Implement parametric geometry). Verified WASM CSG kernel initialization (`manifold-3d`). Implemented pure geometry generators for all 3 templates: `generateKnobGeometry` (outer body, knurling, pointer notch, D-shaft bore), `generateClipGeometry` (mounting base, stanchion gap, cantilever arm, chamfered hook), and `generateBracketGeometry` (leg A/B, corner fillet, through-holes). Built `manifoldToGeometry` extracting indexed vertex positions, normals, bounding box, volume, and surface area.
+- Phase: Phase 5 — Implement parametric geometry
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Confirmed parameter clamp guards and fallback to template defaults.
+- Decision or approval needed: Approve Phase 5 completion and approve transition to Phase 6 (Build the Three.js Workbench viewer).
 
 ### 2026-11-16
 
