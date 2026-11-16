@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { TemplateId, Provenance } from "../../types";
 import { ParameterPanel } from "../workbench/ParameterPanel";
 import { ThreeViewport } from "../workbench/ThreeViewport";
+import { VerifierPanel } from "../workbench/VerifierPanel";
 import { generateGeometry, type GeneratedGeometry } from "../../geometry";
-import { CheckCircle2, Cpu, Activity, Download, ArrowLeft } from "lucide-react";
+import { verifyGeometry, type VerificationSummary } from "../../verifier";
+import { Cpu, Activity } from "lucide-react";
 
 interface WorkbenchScreenProps {
   selectedTemplate: Exclude<TemplateId, "none">;
@@ -61,6 +63,12 @@ export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({
     };
   }, [selectedTemplate, parameters]);
 
+  // Run deterministic verification whenever geometry or parameters change
+  const verification: VerificationSummary | null = useMemo(() => {
+    if (!geometry) return null;
+    return verifyGeometry(geometry, selectedTemplate, parameters);
+  }, [geometry, selectedTemplate, parameters]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden select-none">
       {/* 3-Column Tool Layout */}
@@ -87,72 +95,12 @@ export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({
         </div>
 
         {/* Right Column: Deterministic Verifier */}
-        <div className="md:col-span-3 border-l border-[#2b2e37] bg-[#18191e] flex flex-col min-h-0">
-          <div className="p-3.5 border-b border-[#2b2e37] flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CheckCircle2 className="w-4 h-4 text-amber-500" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-[#f4f4f6]">
-                Deterministic Verifier
-              </h2>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30">
-              Pass
-            </span>
-          </div>
-
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
-            <div className="p-3 rounded-lg bg-[#141519] border border-[#23252c] space-y-1">
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <span className="text-[#f4f4f6]">Watertight & Manifold</span>
-                <span className="text-emerald-400 font-bold">PASS</span>
-              </div>
-              <p className="text-[10px] text-[#9ea3b0]">
-                Zero self-intersections or open boundary edges (WASM CSG guaranteed).
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#141519] border border-[#23252c] space-y-1">
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <span className="text-[#f4f4f6]">Wall Thickness</span>
-                <span className="text-emerald-400 font-bold">≥ 1.2 mm</span>
-              </div>
-              <p className="text-[10px] text-[#9ea3b0]">
-                Exceeds minimum FDM nozzle extrusion limit (0.4mm nozzle).
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#141519] border border-[#23252c] space-y-1">
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <span className="text-[#f4f4f6]">Bounding Box Sane</span>
-                <span className="text-emerald-400 font-bold">PASS</span>
-              </div>
-              <p className="text-[10px] text-[#9ea3b0]">
-                Within standard 3D printer build volume (220×220×250 mm).
-              </p>
-            </div>
-
-            <div className="mt-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px] text-[#9ea3b0] space-y-1">
-              <span className="text-amber-400 font-semibold block">Phase 8 Gate Preview:</span>
-              <span>Full deterministic verifier with mating checks and override logging activates in Phase 8.</span>
-            </div>
-          </div>
-
-          <div className="p-3.5 border-t border-[#2b2e37] flex space-x-2 bg-[#141519]">
-            <button
-              onClick={onBack}
-              className="inline-flex items-center justify-center space-x-1.5 flex-1 py-2 px-3 rounded text-xs text-[#9ea3b0] hover:text-[#f4f4f6] bg-[#212329] border border-[#2b2e37] transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back</span>
-            </button>
-            <button
-              onClick={onContinue}
-              className="inline-flex items-center justify-center space-x-1.5 flex-1 py-2 px-3 rounded text-xs font-semibold bg-amber-500 text-[#121316] hover:bg-amber-400 transition-colors shadow-sm cursor-pointer"
-            >
-              <span>Export STL</span>
-              <Download className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        <div className="md:col-span-3 min-h-0 flex flex-col">
+          <VerifierPanel
+            verification={verification}
+            onBack={onBack}
+            onContinue={onContinue}
+          />
         </div>
       </div>
 
@@ -182,7 +130,7 @@ export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({
             </button>
           )}
           <span className="text-[11px] text-[#6b7280]">
-            WASM CSG Kernel Active
+            Deterministic Verifier Active
           </span>
         </div>
       </div>

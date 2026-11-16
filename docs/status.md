@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 7 — Implement STL export without gating
-- **Status:** Complete (Ready for Phase 8 approval)
+- **Current phase:** Phase 8 — Implement the deterministic verifier
+- **Status:** Complete (Ready for Phase 9 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 7 completion and transition to Phase 8 (Implement the deterministic verifier).
+- **Next gate:** Approve Phase 8 completion and transition to Phase 9 (Add measurement and provenance workflows).
 
 ## Phase progress
 
@@ -21,7 +21,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 5 | Implement parametric geometry | Complete |
 | 6 | Build the Three.js Workbench viewer | Complete |
 | 7 | Implement STL export without gating | Complete |
-| 8 | Implement the deterministic verifier | Not started |
+| 8 | Implement the deterministic verifier | Complete |
 | 9 | Add measurement and provenance workflows | Not started |
 | 10 | Add export gating, overrides, and honest limitations | Not started |
 | 11 | Implement AI tasks and routing | Not started |
@@ -43,6 +43,13 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Approve and install Phase 5 packages (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 8 (Implement the deterministic verifier). Implemented pure non-AI mathematical verification rules in `src/verifier/verifierRules.ts`: `checkManifoldTopology` (checks edge half-wing connectivity ensuring 0 boundary and non-manifold edges), bounding-box tolerance checks (±0.5mm configurable), mating-critical feature verification (shaft bore deck thickness, snap engagement hook & lead-in angle, fastener clearance margins), minimum wall thickness (≥1.2mm blocking), and warning checks (thin wall fragility, orientation/bridging). Integrated `VerifierPanel.tsx` in the Workbench right column.
+- Phase: Phase 8 — Implement the deterministic verifier
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Tested topological 2-manifold edge parity algorithm and boundary conditions.
+- Decision or approval needed: Approve Phase 8 completion and approve transition to Phase 9 (Add measurement and provenance workflows).
 
 ### 2026-11-16
 
