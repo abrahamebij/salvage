@@ -1,12 +1,17 @@
 import React from "react";
-import { Box, Sliders, CheckCircle2, Cpu } from "lucide-react";
+import { Box, Sliders, CheckCircle2, Cpu, Activity } from "lucide-react";
 
 interface WorkbenchScreenProps {
   onBack: () => void;
   onContinue: () => void;
+  onOpenDiagnostics?: () => void;
 }
 
-export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({ onBack, onContinue }) => {
+export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({
+  onBack,
+  onContinue,
+  onOpenDiagnostics,
+}) => {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* 3-Column Tool Layout */}
@@ -90,8 +95,20 @@ export const WorkbenchScreen: React.FC<WorkbenchScreenProps> = ({ onBack, onCont
           <span>•</span>
           <span>Latency: 0ms</span>
         </div>
-        <div className="text-[11px] text-[#6b7280]">
-          No AI calls executed yet
+        <div className="flex items-center space-x-2">
+          {onOpenDiagnostics && (
+            <button
+              type="button"
+              onClick={onOpenDiagnostics}
+              className="inline-flex items-center space-x-1.5 px-2 py-1 rounded bg-[#212329] hover:bg-[#2b2e37] text-amber-400 border border-amber-500/30 text-[11px] transition-colors"
+            >
+              <Activity className="w-3 h-3 text-amber-400" />
+              <span>Test Hybrid Link</span>
+            </button>
+          )}
+          <span className="text-[11px] text-[#6b7280]">
+            No live inference calls yet
+          </span>
         </div>
       </div>
     </div>

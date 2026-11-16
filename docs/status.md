@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 2 — Build the Capture flow
-- **Status:** Complete (Ready for Phase 3 approval)
+- **Current phase:** Phase 3 — Add Firebase and App Check wiring
+- **Status:** Complete (Ready for Phase 4 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 2 completion and transition to Phase 3 (Add Firebase and App Check wiring with the "hello hybrid" test call).
+- **Next gate:** Approve Phase 3 completion and transition to Phase 4 (Define the domain model and template schemas).
 
 ## Phase progress
 
@@ -16,7 +16,7 @@ This is the living project status and change log for Salvage. Every project chan
 | 0 | Confirm the inputs and technical decisions | Complete |
 | 1 | Create the application shell | Complete |
 | 2 | Build the Capture flow | Complete |
-| 3 | Add Firebase and App Check wiring | Not started |
+| 3 | Add Firebase and App Check wiring | Complete |
 | 4 | Define the domain model and template schemas | Not started |
 | 5 | Implement parametric geometry | Not started |
 | 6 | Build the Three.js Workbench viewer | Not started |
@@ -42,6 +42,13 @@ This is the living project status and change log for Salvage. Every project chan
 - [ ] Provide 10–15 evaluation photos or close stand-ins.
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 3 (Add Firebase and App Check wiring). Implemented Firebase initialization (`src/lib/firebase.ts`), App Check debug token workflow for local development, and the Firebase AI Logic integration (`GoogleAIBackend`, `gemini-2.0-flash`, `InferenceMode`). Built the `DiagnosticsModal` with full support for testing `PREFER_ON_DEVICE`, `ONLY_ON_DEVICE`, and `ONLY_IN_CLOUD`, inspecting latency and the real `result.response.inferenceSource` value.
+- Phase: Phase 3 — Add Firebase and App Check wiring
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Confirmed SDK types and execution source property inspection.
+- Decision or approval needed: Approve Phase 3 completion and approve proceeding to Phase 4 (Define the domain model and template schemas).
 
 ### 2026-11-16
 
