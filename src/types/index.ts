@@ -4,6 +4,15 @@ export type Provenance = "measured" | "estimated" | "default";
 
 export type TemplateId = "knob" | "clip" | "bracket" | "none";
 
+export interface CapturedPhoto {
+  id: string;
+  file: File;
+  previewUrl: string;
+  name: string;
+  size: number;
+  type: string;
+}
+
 export interface ParameterDefinition {
   id: string;
   name: string;
@@ -38,7 +47,7 @@ export interface VerifierCheck {
 
 export interface AppState {
   currentStep: AppStep;
-  photos: Array<{ id: string; file: File; previewUrl: string }>;
+  photos: CapturedPhoto[];
   selectedTemplate: TemplateId;
   parameters: Record<string, number>;
   parameterProvenances: Record<string, Provenance>;

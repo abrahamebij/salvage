@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AppStep } from "./types";
+import type { AppStep, CapturedPhoto } from "./types";
 import { Header } from "./components/Header";
 import { CaptureScreen } from "./components/screens/CaptureScreen";
 import { AnalyseScreen } from "./components/screens/AnalyseScreen";
@@ -9,6 +9,7 @@ import { ExportScreen } from "./components/screens/ExportScreen";
 
 export function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>("capture");
+  const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
 
   return (
     <div className="min-h-screen bg-[#121316] text-[#f4f4f6] flex flex-col font-sans selection:bg-amber-500/20 selection:text-amber-200">
@@ -16,7 +17,11 @@ export function App() {
 
       <main className="flex-1 flex flex-col">
         {currentStep === "capture" && (
-          <CaptureScreen onContinue={() => setCurrentStep("analyse")} />
+          <CaptureScreen
+            photos={photos}
+            onPhotosChange={setPhotos}
+            onContinue={() => setCurrentStep("analyse")}
+          />
         )}
         {currentStep === "analyse" && (
           <AnalyseScreen

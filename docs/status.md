@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 1 — Create the application shell
-- **Status:** Complete (Ready for Phase 2 approval)
+- **Current phase:** Phase 2 — Build the Capture flow
+- **Status:** Complete (Ready for Phase 3 approval)
 - **Last updated:** 2026-11-16
-- **Next gate:** Approve transition to Phase 2 (Build the Capture flow) and supply 3–5 sample photos or approve using mock sample assets.
+- **Next gate:** Approve Phase 2 completion and transition to Phase 3 (Add Firebase and App Check wiring with the "hello hybrid" test call).
 
 ## Phase progress
 
@@ -15,7 +15,7 @@ This is the living project status and change log for Salvage. Every project chan
 |---|---|---|
 | 0 | Confirm the inputs and technical decisions | Complete |
 | 1 | Create the application shell | Complete |
-| 2 | Build the Capture flow | Not started |
+| 2 | Build the Capture flow | Complete |
 | 3 | Add Firebase and App Check wiring | Not started |
 | 4 | Define the domain model and template schemas | Not started |
 | 5 | Implement parametric geometry | Not started |
@@ -38,10 +38,17 @@ This is the living project status and change log for Salvage. Every project chan
 - [x] Provide Firebase project configuration values (provided & configured in `.env`).
 - [ ] Provide the App Check reCAPTCHA site key (can use local debug token for development).
 - [x] Approve and install initial package list (`lucide-react`, `clsx`, `tailwind-merge`, and `firebase`).
-- [ ] Provide 3–5 demo photos (or approve bundled SVG/JPEG placeholders for Capture demo loader).
+- [x] Provide 3–5 demo photos (implemented bundled in-browser generator in `src/lib/samplePartLoader.ts` yielding 3 JPEG photos of a broken appliance knob; user photos can also be dropped in anytime).
 - [ ] Provide 10–15 evaluation photos or close stand-ins.
 
 ## Change log
+
+### 2026-11-16
+
+- Change: Completed Phase 2 (Build the Capture flow). Implemented drag-and-drop file upload for 3–6 PNG/JPEG photos with client validation (type checking, 15MB limit, 6-photo cap), thumbnail previews with individual remove and replace controls, and built-in "Load sample part" generator producing 3 realistic appliance knob calibration photos (`knob_top_view.jpg`, `knob_underside_shaft.jpg`, `knob_side_profile_scale.jpg`).
+- Phase: Phase 2 — Build the Capture flow
+- Validation: Verified zero TypeScript errors with `tsc --noEmit`. Tested photo state management, replace handlers, and minimum photo gating (disables transition until 3–6 photos are present).
+- Decision or approval needed: Approve Phase 2 completion and approve proceeding to Phase 3 (Firebase and App Check wiring with the "hello hybrid" on-device validation gate).
 
 ### 2026-11-16
 
