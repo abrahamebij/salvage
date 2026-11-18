@@ -77,7 +77,7 @@ export function geometryToBinaryStl(
  * Triggers a client-side download of the binary STL file
  */
 export function downloadStl(stlBytes: Uint8Array, filename: string): void {
-  const blob = new Blob([stlBytes], { type: "application/sla" });
+  const blob = new Blob([stlBytes as BlobPart], { type: "application/sla" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -98,6 +98,6 @@ export function generateStlFilename(
 ): string {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const [x, y, z] = dimensions.map((d) => Math.round(d));
-  const tag = isOverride ? "_OVERRIDE" : "_verified";
+  const tag = isOverride ? "_OVERRIDE" : "_geometry-checked";
   return `salvage_${templateId}_${x}x${y}x${z}mm_${dateStr}${tag}.stl`;
 }

@@ -4,10 +4,10 @@ This is the living project status and change log for Salvage. Every project chan
 
 ## Current position
 
-- **Current phase:** Phase 8 — Implement the deterministic verifier
-- **Status:** Complete (Ready for Phase 9 approval)
-- **Last updated:** 2026-11-16
-- **Next gate:** Approve Phase 8 completion and transition to Phase 9 (Add measurement and provenance workflows).
+- **Current phase:** Phase 8 — Implement the deterministic verifier (reopened after review)
+- **Status:** Corrected and re-tested in a sandbox (21 tests, `tsc` clean). Phase 3 gate still needs a recorded run on the user's own laptop.
+- **Last updated:** 2026-11-17
+- **Next gate:** (1) Run Diagnostics on the user's laptop in all four modes and record the result in this log. (2) Approve the corrected Phase 8, then Phase 9.
 
 ## Phase progress
 
@@ -16,12 +16,12 @@ This is the living project status and change log for Salvage. Every project chan
 | 0 | Confirm the inputs and technical decisions | Complete |
 | 1 | Create the application shell | Complete |
 | 2 | Build the Capture flow | Complete |
-| 3 | Add Firebase and App Check wiring | Complete |
+| 3 | Add Firebase and App Check wiring | Reopened: App Check fixed, on-device result not yet recorded |
 | 4 | Define the domain model and template schemas | Complete |
-| 5 | Implement parametric geometry | Complete |
+| 5 | Implement parametric geometry | Revised (knob bore, clip barb, bracket fillet) |
 | 6 | Build the Three.js Workbench viewer | Complete |
-| 7 | Implement STL export without gating | Complete |
-| 8 | Implement the deterministic verifier | Complete |
+| 7 | Implement STL export without gating | Revised (export screen now reads the verifier) |
+| 8 | Implement the deterministic verifier | Revised, awaiting approval |
 | 9 | Add measurement and provenance workflows | Not started |
 | 10 | Add export gating, overrides, and honest limitations | Not started |
 | 11 | Implement AI tasks and routing | Not started |
@@ -34,15 +34,24 @@ This is the living project status and change log for Salvage. Every project chan
 
 - [x] Confirm the current Firebase AI Logic web SDK API and supported inference mode names.
 - [x] Confirm how the web SDK exposes the actual inference source.
-- [x] Identify and approve a currently supported cloud model (`gemini-2.0-flash` approved).
+- [ ] Confirm the cloud model. `gemini-2.0-flash` was shut down on June 1, 2026. `gemini-2.5-flash` still answers on the Gemini Developer API but is re-routed to `gemini-3.5-flash-lite` from Dec 1, 2026 (judging window). `.env.example` now says `gemini-3.5-flash-lite`. Change the model in the local `.env` and test with Diagnostics > Only In Cloud.
 - [x] Provide Firebase project configuration values (provided & configured in `.env`).
-- [ ] Provide the App Check reCAPTCHA site key (can use local debug token for development).
+- [ ] Provide the App Check reCAPTCHA site key. In dev, App Check now starts in debug mode without it: register the debug token printed in the console. A production build without a key reports App Check as OFF.
+- [ ] Record the on-device result: Diagnostics > Prefer On Device on the user's laptop (actual source, latency, App Check state).
 - [x] Approve and install initial package list (`lucide-react`, `clsx`, `tailwind-merge`, and `firebase`).
-- [x] Provide 3–5 demo photos (implemented bundled in-browser generator in `src/lib/samplePartLoader.ts` yielding 3 JPEG photos of a broken appliance knob; user photos can also be dropped in anytime).
+- [ ] Provide 3–5 real demo photos. The current sample loader draws synthetic images with the part name written on them, so a vision model can read the answer from the image. Placeholder only.
 - [ ] Provide 10–15 evaluation photos or close stand-ins.
 - [x] Approve and install Phase 5 packages (`manifold-3d`, `three`, `@types/three`).
 
 ## Change log
+
+### 2026-11-17
+
+- Change: Review of Phases 3 to 8 found that several completion claims were not supported. Fixed: (1) the cloud model default and hard-coded fallback (`gemini-2.0-flash`, retired June 1, 2026) are removed, the model now comes only from `VITE_FIREBASE_CLOUD_MODEL` and the Diagnostics text shows the configured name; (2) App Check now starts in debug mode in dev even without a site key, a production build without a key reports it as OFF, and Diagnostics shows the App Check state; (3) knob shaft bore was cut at twice its stated depth and ran through the whole knob, now a blind bore stopping at `shaftBoreDepth`, with the D-flat rebuilt as a real D-shaped cavity at the deep end; knurl ridges no longer push the diameter over the requested size; (4) clip snap barb was offset upward so the model was taller than the verifier expected, now a triangular barb hanging below the arm tip, and the barb is limited so it fits inside the gap; (5) bracket "fillet" was a rod touching both legs along lines, so the bracket was two separate solids, now a concave quarter-round web fused to both legs and limited so it never reaches the holes; (6) the verifier now measures the real mesh (ray casts, point containment, overhang clusters) instead of doing arithmetic on the generating parameters: single connected solid, parameters built as requested, mesh envelope vs requested size, measured-size check (n/a until the Measure step supplies dimensions), bore/hook/hole features measured on the mesh, wall thickness measured at defined sections, real overhang and bridge warnings; tolerance is now actually 0.5 mm; (7) `ExportScreen` now runs the verifier, shows only what it finds, blocks export on failed checks unless the user ticks an explicit override, and the filename says `_OVERRIDE` or `_geometry-checked` instead of `_verified`. Also fixed four TypeScript errors that earlier entries reported as zero (unused imports, a Blob type error).
+- Phase: Phase 8 reopened; touches Phases 3, 5 and 7.
+- Validation: `tsc -p tsconfig.app.json --noEmit` exits 0 in a scratch copy with dependencies installed. `tsx --test tests/*.test.ts`: 21 of 21 pass (watertight single solid per template, bore-depth and bracket-fillet regression tests, negative cases for every blocking check). The new regression tests fail against the previous generators. A production `vite build` in the scratch copy emits the manifold `.wasm` asset. NOT tested: the app in a browser, Firebase calls, on-device inference, the STL file in an independent slicer.
+- Decision or approval needed: Run Diagnostics on the laptop and record the result. Confirm the cloud model name. Confirm the barb direction (hangs below the arm tip) and the D-flat convention (flat at the deep end of the bore, round side toward -Y). Approve corrected Phase 8 before Phase 9. The `test` script needs `tsx` as a dev dependency (install needs approval).
+- Open item: `holeSpacing` is measured from the outer face line of the bracket, but the parameter description says "from inside corner". Decide which is intended.
 
 ### 2026-11-16
 

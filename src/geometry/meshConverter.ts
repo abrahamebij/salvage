@@ -1,7 +1,10 @@
 import type { GeneratedGeometry, BoundingBox } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function manifoldToGeometry(manifold: any): GeneratedGeometry {
+export function manifoldToGeometry(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  manifold: any,
+  meta: Record<string, number> = {}
+): GeneratedGeometry {
   const mesh = manifold.getMesh();
   const numProp = mesh.numProp || 3;
   const numVerts = mesh.vertProperties.length / numProp;
@@ -85,6 +88,13 @@ export function manifoldToGeometry(manifold: any): GeneratedGeometry {
   const volumeMm3 = typeof manifold.volume === "function" ? manifold.volume() : 0;
   const surfaceAreaMm2 = typeof manifold.surfaceArea === "function" ? manifold.surfaceArea() : 0;
 
+  // Count disconnected solid bodies (a loose rod or floating island is not printable)
+  const parts = manifold.decompose();
+  const componentCount: number = parts.length;
+  for (const part of parts) {
+    if (typeof part.delete === "function") part.delete();
+  }
+
   return {
     positions,
     indices,
@@ -94,6 +104,8 @@ export function manifoldToGeometry(manifold: any): GeneratedGeometry {
     boundingBox,
     volumeMm3,
     surfaceAreaMm2,
+    componentCount,
+    meta,
     manifoldMesh: manifold,
   };
 }

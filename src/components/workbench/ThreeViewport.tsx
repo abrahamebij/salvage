@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { GeneratedGeometry } from "../../geometry";
-import { RotateCcw, Eye, Layers, Loader2 } from "lucide-react";
+import { RotateCcw, Layers, Loader2 } from "lucide-react";
 
 interface ThreeViewportProps {
   geometry: GeneratedGeometry | null;

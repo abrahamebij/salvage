@@ -27,21 +27,60 @@ const firebaseConfig = {
 
 export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
+export type AppCheckState = "active" | "debug" | "inactive";
+
+let appCheckState: AppCheckState = "inactive";
 let appCheckInitialized = false;
-export function setupAppCheck() {
-  if (typeof window === "undefined" || appCheckInitialized) return;
-  const siteKey = import.meta.env.VITE_FIREBASE_APPCHECK_KEY;
-  if (siteKey) {
-    try {
-      initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider(siteKey),
-        isTokenAutoRefreshEnabled: true,
-      });
-      appCheckInitialized = true;
-    } catch (e) {
-      console.warn("Firebase App Check initialization notice:", e);
-    }
+
+export function getAppCheckState(): AppCheckState {
+  return appCheckState;
+}
+
+/**
+ * Starts App Check. Firebase AI Logic requires it for this submission.
+ * - With a real reCAPTCHA site key: App Check runs normally (in dev it uses the debug token).
+ * - In dev with no key: App Check still starts in debug mode (the debug token replaces reCAPTCHA),
+ *   so the debug-token workflow works before a site key exists. The console prints a debug token
+ *   the first time; register it in Firebase console > App Check > Apps > Manage debug tokens.
+ * - In a production build with no key: App Check stays off and this is reported, never hidden.
+ */
+export function setupAppCheck(): AppCheckState {
+  if (typeof window === "undefined" || appCheckInitialized) return appCheckState;
+
+  const rawKey = import.meta.env.VITE_FIREBASE_APPCHECK_KEY as string | undefined;
+  const hasRealKey = !!rawKey && !rawKey.startsWith("your_");
+  const isDev = import.meta.env.DEV;
+
+  if (!hasRealKey && !isDev) {
+    console.warn("App Check is OFF: VITE_FIREBASE_APPCHECK_KEY is not set in this build.");
+    appCheckState = "inactive";
+    return appCheckState;
   }
+
+  try {
+    initializeAppCheck(app, {
+      // In dev the debug token is used and reCAPTCHA is never contacted, so a placeholder is fine.
+      provider: new ReCaptchaV3Provider(hasRealKey ? rawKey! : "debug-mode-placeholder-key"),
+      isTokenAutoRefreshEnabled: true,
+    });
+    appCheckInitialized = true;
+    appCheckState = isDev ? "debug" : "active";
+  } catch (e) {
+    console.warn("Firebase App Check initialization notice:", e);
+    appCheckState = "inactive";
+  }
+  return appCheckState;
+}
+
+/** The cloud model comes only from the environment. There is deliberately no hard-coded fallback. */
+export function getCloudModelName(): string {
+  const name = import.meta.env.VITE_FIREBASE_CLOUD_MODEL as string | undefined;
+  if (!name || name.startsWith("your_")) {
+    throw new Error(
+      "VITE_FIREBASE_CLOUD_MODEL is not set. Pick a current model from the Firebase AI Logic supported-models page and put it in .env."
+    );
+  }
+  return name;
 }
 
 // Initialize Firebase AI Logic with Google AI backend
@@ -57,16 +96,19 @@ export interface HybridTestResult {
   success: boolean;
   error?: string;
   timestamp: string;
+  cloudModel?: string;
+  appCheck: AppCheckState;
 }
 
 export async function runHelloHybridTest(
   mode: InferenceMode = InferenceMode.PREFER_ON_DEVICE
 ): Promise<HybridTestResult> {
-  setupAppCheck();
+  const appCheck = setupAppCheck();
   const startTime = performance.now();
-  const cloudModel = import.meta.env.VITE_FIREBASE_CLOUD_MODEL || "gemini-2.0-flash";
+  let cloudModel: string | undefined;
 
   try {
+    cloudModel = getCloudModelName();
     const model: GenerativeModel = getGenerativeModel(ai, {
       mode,
       inCloudParams: {
@@ -96,6 +138,8 @@ export async function runHelloHybridTest(
       output: text,
       success: true,
       timestamp: new Date().toLocaleTimeString(),
+      cloudModel,
+      appCheck,
     };
   } catch (err: unknown) {
     const latencyMs = Math.round(performance.now() - startTime);
@@ -110,6 +154,8 @@ export async function runHelloHybridTest(
       success: false,
       error: errorMessage,
       timestamp: new Date().toLocaleTimeString(),
+      cloudModel,
+      appCheck,
     };
   }
 }

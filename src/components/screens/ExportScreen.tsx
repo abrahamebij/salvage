@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { TemplateId } from "../../types";
 import {
   generateGeometry,
@@ -7,7 +7,8 @@ import {
   generateStlFilename,
   type GeneratedGeometry,
 } from "../../geometry";
-import { Download, AlertTriangle, ArrowLeft, CheckCircle2, Box, FileCode, Loader2 } from "lucide-react";
+import { verifyGeometry, type VerifierRuleResult } from "../../verifier";
+import { Download, AlertTriangle, ArrowLeft, CheckCircle2, Box, FileCode, Loader2, XCircle } from "lucide-react";
 
 interface ExportScreenProps {
   selectedTemplate: Exclude<TemplateId, "none">;
@@ -24,6 +25,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [overrideAccepted, setOverrideAccepted] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -46,13 +48,30 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
     };
   }, [selectedTemplate, parameters]);
 
+  // The verifier decides what this screen may claim. Nothing below is assumed.
+  const verification = useMemo(
+    () => (geometry ? verifyGeometry(geometry, selectedTemplate, parameters) : null),
+    [geometry, selectedTemplate, parameters]
+  );
+  const checksPassed = verification?.passed ?? false;
+  const blockingCount = verification?.blockingFailures ?? 0;
+  const failedChecks: VerifierRuleResult[] =
+    verification?.results.filter((r) => r.category === "blocking" && r.status === "fail") ?? [];
+  const isOverride = !checksPassed;
+  const canDownload = !!geometry && !!verification && (checksPassed || overrideAccepted);
+
+  // Changing the model resets the override acknowledgement
+  useEffect(() => {
+    setOverrideAccepted(false);
+  }, [selectedTemplate, parameters]);
+
   const handleDownload = () => {
-    if (!geometry) return;
+    if (!geometry || !canDownload) return;
     try {
       const filename = generateStlFilename(
         selectedTemplate,
         geometry.boundingBox.dimensions,
-        false
+        isOverride
       );
       const stlBytes = geometryToBinaryStl(
         geometry,
@@ -67,7 +86,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
   };
 
   const filename = geometry
-    ? generateStlFilename(selectedTemplate, geometry.boundingBox.dimensions, false)
+    ? generateStlFilename(selectedTemplate, geometry.boundingBox.dimensions, isOverride)
     : `salvage_${selectedTemplate}.stl`;
 
   const fileSizeKb = geometry ? ((84 + geometry.triangleCount * 50) / 1024).toFixed(1) : "0";
@@ -79,7 +98,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
           Export Binary STL
         </h1>
         <p className="mt-2 text-sm text-[#9ea3b0] max-w-2xl">
-          Download your verified 3D printable replacement model. The binary STL file is scaled in millimeters and aligned for direct slicing in Cura, PrusaSlicer, or Bambu Studio.
+          Download your replacement part model. The binary STL file is scaled in millimeters and can be opened in Cura, PrusaSlicer, or Bambu Studio.
         </p>
       </div>
 
@@ -89,11 +108,46 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
         <div className="text-xs text-[#f4f4f6] space-y-1">
           <p className="font-semibold text-amber-400">Honest Limitations Notice</p>
           <p className="text-[#9ea3b0] leading-relaxed">
-            Geometry checks passed. This is not a load-tested or mechanically verified part.
+            {!verification
+              ? "Geometry checks are running."
+              : checksPassed
+              ? "Geometry checks passed."
+              : `Geometry checks have not passed (${blockingCount} blocking).`}{" "}
+            This is not a load-tested or mechanically verified part.
             Check fitment and material suitability (PETG, ABS, or Nylon recommended for functional mechanical stress) before putting in service.
           </p>
         </div>
       </div>
+
+      {/* Failed checks and explicit override */}
+      {failedChecks.length > 0 && (
+        <div className="mb-6 p-4 rounded-lg bg-red-950/30 border border-red-500/30 text-xs space-y-3">
+          <p className="font-semibold text-red-400">
+            Export is blocked by {failedChecks.length} failed check{failedChecks.length === 1 ? "" : "s"}:
+          </p>
+          <ul className="space-y-2">
+            {failedChecks.map((c) => (
+              <li key={c.id} className="flex items-start space-x-2 text-red-200">
+                <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                <span>
+                  <span className="font-semibold">{c.title}.</span> {c.message}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <label className="flex items-start space-x-2 text-[#f4f4f6] cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={overrideAccepted}
+              onChange={(e) => setOverrideAccepted(e.target.checked)}
+              className="mt-0.5 accent-amber-500"
+            />
+            <span>
+              I understand these checks failed. Export anyway. The file name will say OVERRIDE.
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Error state */}
       {error && (
@@ -146,7 +200,7 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
           <button
             type="button"
             onClick={handleDownload}
-            disabled={isGenerating || !geometry}
+            disabled={isGenerating || !canDownload}
             className="inline-flex items-center space-x-2 px-6 py-3 text-xs font-semibold rounded-md bg-[#f59e0b] text-[#121316] hover:bg-[#d97706] transition-all disabled:opacity-50 cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
           >
             {isGenerating ? (
@@ -161,12 +215,14 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
                 ? "Compiling Binary STL..."
                 : downloadSuccess
                 ? "Downloaded Successfully!"
+                : isOverride
+                ? "Download Binary STL (override)"
                 : "Download Binary STL (.stl)"}
             </span>
           </button>
 
           <span className="text-[11px] font-mono text-[#6b7280]">
-            Format: Standard IEEE 754 Binary STL • Units: mm • Watertight CSG
+            Format: Binary STL • Units: mm
           </span>
         </div>
       </div>
@@ -180,9 +236,19 @@ export const ExportScreen: React.FC<ExportScreenProps> = ({
           <span>Back to Workbench</span>
         </button>
 
-        <span className="text-xs text-emerald-400 font-mono flex items-center space-x-1">
+        <span
+          className={`text-xs font-mono flex items-center space-x-1 ${
+            !verification ? "text-[#6b7280]" : checksPassed ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
           <Box className="w-3.5 h-3.5" />
-          <span>Ready for 3D printing</span>
+          <span>
+            {!verification
+              ? "Checking geometry"
+              : checksPassed
+              ? "Geometry checks passed"
+              : `${blockingCount} check${blockingCount === 1 ? "" : "s"} failed`}
+          </span>
         </span>
       </div>
     </div>

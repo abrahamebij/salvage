@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   runHelloHybridTest,
   InferenceMode,
+  getAppCheckState,
   type HybridTestResult,
 } from "../lib/firebase";
 import {
@@ -9,9 +10,7 @@ import {
   X,
   Play,
   Cpu,
-  CheckCircle2,
   AlertTriangle,
-  Clock,
   Terminal,
 } from "lucide-react";
 
@@ -79,7 +78,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({
             </div>
             <p className="leading-relaxed">
               Requests target <span className="text-[#f4f4f6] font-mono">PREFER_ON_DEVICE</span>.
-              If Chrome Desktop 139+ Gemini Nano is available, it executes locally. If unsupported, offline, or unavailable, it routes to <span className="text-[#f4f4f6] font-mono">gemini-2.0-flash</span> in the cloud.
+              If Chrome Desktop 139+ Gemini Nano is available, it executes locally. If unsupported, offline, or unavailable, it routes to <span className="text-[#f4f4f6] font-mono">{import.meta.env.VITE_FIREBASE_CLOUD_MODEL || "(VITE_FIREBASE_CLOUD_MODEL not set)"}</span> in the cloud.
             </p>
           </div>
 
@@ -152,7 +151,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({
               </div>
 
               {/* Status Chips */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
                 <div className="p-2 rounded bg-[#121316] border border-[#2b2e37]">
                   <span className="text-[10px] text-[#6b7280] block">STATUS</span>
                   <span className={testResult.success ? "text-emerald-400 font-bold" : "text-red-400 font-bold"}>
@@ -184,6 +183,13 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({
                   <span className="text-[10px] text-[#6b7280] block">REQUESTED</span>
                   <span className="text-[#9ea3b0] truncate block">
                     {testResult.requestedMode}
+                  </span>
+                </div>
+
+                <div className="p-2 rounded bg-[#121316] border border-[#2b2e37]">
+                  <span className="text-[10px] text-[#6b7280] block">APP CHECK</span>
+                  <span className={testResult.appCheck === "inactive" ? "text-red-400 font-bold" : "text-[#9ea3b0]"}>
+                    {(testResult.appCheck ?? getAppCheckState()).toUpperCase()}
                   </span>
                 </div>
               </div>
